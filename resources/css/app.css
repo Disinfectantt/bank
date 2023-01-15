@@ -1,0 +1,649 @@
+@media all and (max-width: 1280px) {
+    .all {
+        width: 100%;
+    }
+
+    .wrapper {
+        flex-wrap: wrap;
+    }
+
+    .service,
+    .card,
+    .review {
+        margin-bottom: 20px;
+    }
+}
+
+@media all and (max-width: 1000px) {
+    header {
+        height: 30px;
+    }
+
+    .logo {
+        width: 50px;
+        height: 40px;
+    }
+
+    .info {
+        flex-wrap: wrap;
+    }
+
+    nav {
+        display: none;
+    }
+
+    h1 {
+        position: relative;
+        left: 15px;
+        font-size: 27px;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 60px;
+    }
+
+    .body main,
+    .index main {
+        margin-top: 65px;
+    }
+
+    .body {
+        height: 100%;
+    }
+
+    .c {
+        flex-wrap: wrap;
+    }
+
+    .burger {
+        position: absolute;
+        left: 80%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        cursor: pointer;
+        transition-duration: .4s;
+    }
+
+    .burger span {
+        display: block;
+        position: relative;
+        width: 30px;
+        height: 5px;
+        background-color: #000000;
+        border-radius: 13px;
+        transition-duration: .4s;
+    }
+
+    .burger span:nth-child(1) {
+        top: 17px;
+    }
+
+    .burger span:nth-child(3) {
+        bottom: 17px;
+    }
+
+    .burger.active span:nth-child(1) {
+        transform: rotate(-45deg);
+        top: 5px;
+    }
+
+    .burger.active span:nth-child(2) {
+        transition-duration: 0s;
+        opacity: 0;
+    }
+
+    .burger.active span:nth-child(3) {
+        transform: rotate(45deg);
+        bottom: 5px;
+    }
+
+    .nav.active {
+        top: 30px;
+    }
+}
+
+@media all and (min-width: 1000px) {
+    nav {
+        display: flex;
+    }
+
+    header {
+        justify-content: space-between;
+    }
+
+    h1 {
+        position: relative;
+        right: 5%;
+    }
+
+    .logo {
+        width: 100px;
+        height: 80px;
+    }
+
+    main {
+        margin-top: 120px;
+    }
+
+    html {
+        scroll-padding-top: 120px;
+    }
+}
+
+@media all and (min-width: 600px) {
+    .info p {
+        width: 50%;
+    }
+
+    .crdt,
+    .order {
+        min-width: 350px;
+    }
+}
+
+@media all and (max-width: 600px) {
+    .info p {
+        width: 100%;
+    }
+
+    .info {
+        padding-top: 50px;
+    }
+}
+
+body {
+    width: 100%;
+    margin: 0;
+}
+
+html,
+.all {
+    overflow-x: hidden;
+    height: 100%;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+.all {
+    max-width: 1280px;
+    margin: 0 auto;
+    font-family: 'Roboto', sans-serif;
+}
+
+.logo {
+    transition: all .4s;
+}
+
+.nav {
+    list-style: none;
+    position: fixed;
+    top: -500px;
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(90deg, rgba(249, 249, 249, 1) 0%, rgba(230, 223, 219, 1) 50%, rgba(225, 220, 217, 1) 100%);
+    padding-top: 15px;
+    transition: top .4s ease 0s;
+    z-index: 1;
+}
+
+.nav li {
+    margin-bottom: 10px;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: space-around;
+}
+
+p {
+    font-size: 18px;
+}
+
+a,
+router-link {
+    text-decoration: none;
+    font-size: 18px;
+    color: black;
+    transition: transform .4s;
+}
+
+.center {
+    text-align: center;
+}
+
+.info {
+    background-image: url(../../img/Many-dollars-money.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: white;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+}
+
+.info p {
+    position: relative;
+    text-shadow: 1px 1px 1px #000;
+    text-align: justify;
+}
+
+header {
+    position: fixed;
+    width: 100%;
+    max-width: 1260px;
+    padding: 10px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(90deg, rgba(249, 249, 249, 1) 0%, rgba(230, 223, 219, 1) 50%, rgba(225, 220, 217, 1) 100%);
+    margin-bottom: 15px;
+    transition-duration: .4s;
+    border-bottom: 1px solid rgb(194, 194, 194);
+}
+
+header.out {
+    transform: translateY(-100%);
+}
+
+nav {
+    width: 70%;
+    justify-content: space-around;
+}
+
+section {
+    padding: 15px 15px 30px 15px;
+    background: linear-gradient(90deg, rgba(249, 249, 249, 1) 0%, rgba(230, 223, 219, 1) 50%, rgba(225, 220, 217, 1) 100%);
+    margin-bottom: 15px;
+}
+
+.allo {
+    height: 70px;
+    width: 250px;
+    background-color: #99cc66;
+    font-size: 18px;
+    border-radius: 10px;
+    position: relative;
+    left: 15%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.service {
+    width: 240px;
+}
+
+.service p,
+.card p {
+    height: 60px;
+}
+
+.card h3 {
+    height: 30px;
+}
+
+.service-img,
+.card-img {
+    width: 100%;
+    height: 200px;
+}
+
+.service-img {
+    border-radius: 10px;
+}
+
+.service,
+.card {
+    border: 1px solid rgb(194, 194, 194);
+    border-radius: 10px;
+    box-shadow: 10px 0px 10px 5px rgba(211, 211, 211, 1);
+    text-align: center;
+    padding: 15px 15px 30px 15px;
+    background: white;
+}
+
+.button {
+    height: 50px;
+    width: 200px;
+    background-color: #99cc66;
+    font-size: 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    border: none;
+    transition: all .4s;
+}
+
+.card,
+.review {
+    width: 340px;
+}
+
+form {
+    margin: 0 auto;
+    background: white;
+    box-shadow: 10px 0px 10px 5px rgba(211, 211, 211, 1);
+    padding: 15px 15px 30px 15px;
+    border-radius: 10px;
+}
+
+.a {
+    max-width: 640px;
+    width: 80%;
+}
+
+.a div,
+.b div,
+.e div,
+.f div,
+.l div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0 auto;
+    width: 70%;
+    max-width: 300px;
+    margin-top: 15px;
+}
+
+.text {
+    font-size: 18px;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid rgb(194, 194, 194);
+    border-radius: 3px;
+    outline: none;
+    padding: 10px;
+}
+
+.text:hover {
+    border: 1px solid gray;
+}
+
+.text:focus {
+    border: 1px solid black;
+}
+
+label {
+    font-size: 18px;
+}
+
+.submit {
+    margin-top: 15px;
+}
+
+.img-rev {
+    width: 80px;
+    height: 80px;
+}
+
+.review {
+    border: 1px solid rgb(194, 194, 194);
+    border-radius: 10px;
+    box-shadow: 10px 0px 10px 5px rgba(211, 211, 211, 1);
+    padding: 15px 15px 30px 15px;
+    background: white;
+}
+
+.review p {
+    text-align: justify;
+}
+
+.b {
+    max-width: 380px;
+    width: 70%;
+}
+
+.social {
+    height: 50px;
+    width: 50px;
+    transition: all .4s;
+}
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: linear-gradient(90deg, rgba(249, 249, 249, 1) 0%, rgba(230, 223, 219, 1) 50%, rgba(225, 220, 217, 1) 100%);
+}
+
+.aga {
+    font-size: 10px;
+}
+
+.service:hover,
+.card:hover,
+.review:hover,
+form:hover {
+    box-shadow: 10px 0px 10px 5px rgba(128, 128, 128, 0.5);
+}
+
+.service,
+.card,
+.review,
+form {
+    transition: all .4s;
+}
+
+.submit:hover {
+    cursor: pointer;
+}
+
+.allo:hover,
+.button:hover,
+a:hover,
+.socials img:hover,
+router-link:hover {
+    transform: scale(1.2);
+}
+
+a:active,
+.button:active,
+router-link:active {
+    background-color: rgb(104, 195, 255);
+}
+
+header a:active,
+li a:active,
+li router-link:active,
+router-link:active {
+    color: rgb(104, 195, 255);
+    background: none;
+}
+
+router-link {
+    cursor: pointer;
+}
+
+.c {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 80%;
+}
+
+.c button:hover {
+    cursor: pointer;
+}
+
+.d .wrapper div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0 auto;
+    width: 90%;
+    max-width: 300px;
+    margin-top: 15px;
+}
+
+.d {
+    width: 80%;
+}
+
+.dop {
+    font-size: 22px;
+}
+
+.e {
+    width: 80%;
+}
+
+.f {
+    width: 80%;
+}
+
+.f .wrapper {
+    align-items: center;
+}
+
+#percent {
+    text-align: center;
+}
+
+.text.error {
+    border: 1px solid red;
+    color: red;
+}
+
+.error {
+    color: red;
+}
+
+.wrapper_alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.4);
+    z-index: 999;
+}
+
+.alert {
+    width: 85%;
+    height: 180px;
+    max-width: 400px;
+    margin: auto;
+    text-align: center;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 10px 0px 10px 5px rgba(211, 211, 211, 1);
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.alert:hover {
+    box-shadow: 10px 0px 10px 5px rgba(128, 128, 128, 0.5);
+}
+
+.close {
+    position: absolute;
+    left: 85%;
+    bottom: 60%;
+    height: 40px;
+    cursor: pointer;
+}
+
+.close span:nth-child(1) {
+    transform: rotate(-45deg);
+}
+
+.close span:nth-child(2) {
+    bottom: 5px;
+    transform: rotate(45deg);
+}
+
+.close span {
+    display: block;
+    position: relative;
+    width: 30px;
+    height: 5px;
+    background-color: #000000;
+    border-radius: 13px;
+}
+
+.hidden {
+    display: none;
+}
+
+.loader {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin .5s linear infinite;
+    width: 2rem;
+    height: 2rem;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.show {
+    transition: opacity 400ms;
+    visibility: visible;
+}
+
+.hide {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.err_bg {
+    background-color: rgba(255, 0, 0, 0.166);
+    padding: .3rem;
+}
+
+.logout {
+    cursor: pointer;
+    background-color: rgb(255, 255, 255);
+}
+
+/* 1. declare transition */
+.fade-move,
+.fade-enter-active,
+.fade-leave-active {
+    transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+/* 2. declare enter from and leave to state */
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: scaleY(0.01) translate(30px, 0);
+}
+
+/* 3. ensure leaving items are taken out of layout flow so that moving
+      animations can be calculated correctly. */
+.fade-leave-active {
+    position: absolute;
+}
+
+.v-enter-active,
+.v-leave-active {
+    transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+    opacity: 0;
+}

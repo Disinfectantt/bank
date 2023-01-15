@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /admin_panel/
+Host: https://bank.cringee.xyz/
