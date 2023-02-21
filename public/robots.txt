@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /admin_panel/
+Disallow: /personal_account/
+Disallow: /admin_panel/
+Disallow: /reset_password/
+Disallow: /email_verified/
 Host: https://bank.cringee.xyz/

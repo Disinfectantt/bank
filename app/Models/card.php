@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class card extends Model
 {
     use HasFactory;
-    protected $fillable = ['surname', 'name', 'patronymic', 'passport', 'card', 'tel', 'card_limit'];
+    protected $fillable = ['surname', 'name', 'patronymic', 'passport', 'card', 'tel', 'card_limit', 'user_id'];
 }

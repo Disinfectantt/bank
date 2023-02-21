@@ -17,7 +17,7 @@ class feedbackController extends Controller
      */
     public function index()
     {
-        return Auth::check() && Auth::user()->role == 'admin' ? feedback::all() : response()->json(['status' => false], 401);
+        return Auth::check() && Auth::user()->role >= 5 ? feedback::paginate(10)->onEachSide(2) : response()->json(['status' => false], 401);
     }
 
     /**
@@ -29,11 +29,11 @@ class feedbackController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'reg' => 'required',
+            'region' => 'required',
             'tel' => 'required|digits_between:11,11',
             'surname' => 'required|max:50|min:4',
             'name' => 'required|max:50|min:4',
-            'otc' => 'required|max:50|min:4'
+            'patronymic' => 'required|max:50|min:4'
         ]);
 
         if ($validator->fails()) {
@@ -43,12 +43,18 @@ class feedbackController extends Controller
             ], 400);
         }
 
+        if(Auth::check()){
+            $user_id=Auth::user()->id;
+        }else{
+            $user_id = null;
+        }
         $feedback = feedback::create([
             'tel' => $request->tel,
-            'region' => $request->reg,
+            'region' => $request->region,
             'surname' => $request->surname,
             'name' => $request->name,
-            'patronymic' => $request->otc
+            'patronymic' => $request->patronymic,
+            'user_id' => $user_id
         ]);
 
         broadcast(new feedbackChange($feedback, 'new'));
@@ -66,7 +72,11 @@ class feedbackController extends Controller
      */
     public function show($id)
     {
-        //
+        if (Auth::check() && Auth::user()->id != $id){
+            return response()->json(['status' => false], 401);
+        }
+
+        return feedback::where('user_id', '=', $id)->get();
     }
 
     /**
@@ -78,14 +88,20 @@ class feedbackController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (Auth::check() && Auth::user()->role == 'admin') {
-            $data = [
-                'tel' => $request->tel,
-                'region' => $request->reg,
-                'surname' => $request->surname,
-                'name' => $request->name,
-                'patronymic' => $request->otc
-            ];
+        if (Auth::check() && Auth::user()->role >= 5) {
+            if($request->filled('status')){
+                $data = [
+                    'status' => 'completed'
+                ];
+            }else{
+                $data = [
+                    'tel' => $request->tel,
+                    'region' => $request->region,
+                    'surname' => $request->surname,
+                    'name' => $request->name,
+                    'patronymic' => $request->patronymic
+                ];
+            }
             feedback::where('id', $id)->update($data);
             $feedback = feedback::where('id', $id)->get();
             broadcast(new feedbackChange($feedback, 'update'));
@@ -102,7 +118,7 @@ class feedbackController extends Controller
      */
     public function destroy($id)
     {
-        if (Auth::check() && Auth::user()->role == 'admin') {
+        if (Auth::check() && Auth::user()->role >= 5) {
             feedback::destroy($id);
             broadcast(new feedbackChange($id, 'destroy'))->toOthers();
         } else {

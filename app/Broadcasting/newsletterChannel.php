@@ -25,6 +25,6 @@ class newsletterChannel
      */
     public function join(User $user)
     {
-        return Auth::check() && Auth::user()->role == 'admin';
+        return Auth::check() && Auth::user()->role >= 5;
     }
 }

@@ -6,11 +6,11 @@ export default {
     components: { popup },
     data() {
         return {
-            reg: 'MO',
+            region: 'MO',
             tel: '',
             surname: '',
             name: '',
-            otc: '',
+            patronymic: '',
             loading: false,
             popup_text: 'С вами свяжутся в ближайшее время!',
             isVisiblePopup: false
@@ -37,7 +37,7 @@ export default {
                 minLength: helpers.withMessage('Введите корректное имя от 4 до 50 символов', minLength(4)),
                 maxLength: maxLength(50)
             },
-            otc: {
+            patronymic: {
                 required: helpers.withMessage('Обязательно к заполнению', required),
                 minLength: helpers.withMessage('Введите корректное имя от 4 до 50 символов', minLength(4)),
                 maxLength: maxLength(50)
@@ -50,19 +50,19 @@ export default {
                 this.v$.tel.$touch();
                 this.v$.surname.$touch();
                 this.v$.name.$touch();
-                this.v$.otc.$touch();
+                this.v$.patronymic.$touch();
                 return;
             }
             this.loading = true;
-            axios.post('api/feedback', { reg: this.reg, tel: this.tel, surname: this.surname, name: this.name, otc: this.otc }).then(response => {
+            axios.post('api/feedback', { region: this.region, tel: this.tel, surname: this.surname, name: this.name, patronymic: this.patronymic }).then(response => {
                 this.tel = '';
                 this.surname = '';
                 this.name = '';
-                this.otc = '';
+                this.patronymic = '';
                 this.v$.$reset();
                 this.isVisiblePopup = true;
             }).catch(error => {
-                console.log(error);
+                console.log(error.response.data);
             }).finally(() => (this.loading = false));
         },
         close() {
@@ -76,8 +76,8 @@ export default {
         <Transition><popup v-if="isVisiblePopup" @close="close">{{ popup_text }}</popup></Transition>
         <form class="a" @submit.prevent="sendFormA" action="php/index_feedback.php" method="POST" name="a">
             <div>
-                <label for="reg">Регион</label>
-                <select id="reg" class="text" name="reg" v-model="reg">
+                <label for="region">Регион</label>
+                <select id="region" class="text" name="region" v-model="region">
                     <option value="MO">Москва и область</option>
                     <option value="Len obl">Ленинградская область</option>
                     <option value="Tveskaya obl">Тверская область</option>
@@ -111,13 +111,13 @@ export default {
                     v-if="v$.name.$dirty && (v$.name.minLength.$invalid || v$.name.maxLength.$invalid)">{{
                     v$.name.minLength.$message }}</span>
             </div>
-            <div><label for="otc">Отчество</label>
-                <input @blur="v$.otc.$touch()" :class="{ error: v$.otc.$invalid && v$.otc.$dirty }" v-model="otc"
-                    type="text" id="otc" class="text" placeholder="Петрович" name="otc">
-                <span class="error" v-if="v$.otc.$dirty && v$.otc.required.$invalid">{{ v$.otc.required.$message
+            <div><label for="patronymic">Отчество</label>
+                <input @blur="v$.patronymic.$touch()" :class="{ error: v$.patronymic.$invalid && v$.patronymic.$dirty }" v-model="patronymic"
+                    type="text" id="patronymic" class="text" placeholder="Петрович" name="patronymic">
+                <span class="error" v-if="v$.patronymic.$dirty && v$.patronymic.required.$invalid">{{ v$.patronymic.required.$message
                 }}</span>
-                <span class="error" v-if="v$.otc.$dirty && (v$.otc.minLength.$invalid || v$.otc.maxLength.$invalid)">{{
-                v$.otc.minLength.$message }}</span>
+                <span class="error" v-if="v$.patronymic.$dirty && (v$.patronymic.minLength.$invalid || v$.patronymic.maxLength.$invalid)">{{
+                v$.patronymic.minLength.$message }}</span>
             </div>
             <button type="submit" class="button submit" :disabled="loading">
                 <p v-if="!loading">Перезвонить</p>

@@ -17,7 +17,7 @@ class creditsController extends Controller
      */
     public function index()
     {
-        return Auth::check() && Auth::user()->role == 'admin' ? credit::all() : response()->json(['status' => false], 401);
+        return Auth::check() && Auth::user()->role >= 5 ? credit::paginate(10)->onEachSide(2) : response()->json(['status' => false], 401);
     }
 
     /**
@@ -29,13 +29,13 @@ class creditsController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'reg' => 'required',
+            'region' => 'required',
             'surname' => 'required|max:50|min:4',
             'name' => 'required|max:50|min:4',
-            'otc' => 'required|max:50|min:4',
-            'date' => 'required|integer|between:1,36',
+            'patronymic' => 'required|max:50|min:4',
+            'period' => 'required|integer|between:1,36',
             'sum' => 'required|integer|between:1,500000',
-            'document' => 'required|max:10|min:10',
+            'passport' => 'required|max:10|min:10',
             'insurance' => 'string|in:true,false',
         ]);
 
@@ -45,16 +45,21 @@ class creditsController extends Controller
                 'message' => $validator->errors(),
             ], 400);
         }
-
+        if(Auth::check()){
+            $user_id=Auth::user()->id;
+        }else{
+            $user_id = null;
+        }
         $data = credit::create([
-            'region' => $request->reg,
+            'region' => $request->region,
             'surname' => $request->surname,
             'name' => $request->name,
-            'patronymic' => $request->otc,
-            'passport' => $request->document,
-            'period' => $request->date,
+            'patronymic' => $request->patronymic,
+            'passport' => $request->passport,
+            'period' => $request->period,
             'sum' => $request->sum,
             'insurance' => $request->insurance,
+            'user_id' => $user_id
         ]);
 
         broadcast(new creditChange($data, 'new'));
@@ -72,7 +77,11 @@ class creditsController extends Controller
      */
     public function show($id)
     {
-        //
+        if (Auth::check() && Auth::user()->id != $id){
+            return response()->json(['status' => false], 401);
+        }
+
+        return credit::where('user_id', '=', $id)->get();
     }
 
     /**
@@ -84,14 +93,14 @@ class creditsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (Auth::check() && Auth::user()->role == 'admin') {
+        if (Auth::check() && Auth::user()->role >= 5) {
             $data = [
-                'region' => $request->reg,
+                'region' => $request->region,
                 'surname' => $request->surname,
                 'name' => $request->name,
-                'patronymic' => $request->otc,
-                'passport' => $request->document,
-                'period' => $request->date,
+                'patronymic' => $request->patronymic,
+                'passport' => $request->passport,
+                'period' => $request->period,
                 'sum' => $request->sum,
                 'insurance' => $request->insurance
             ];
@@ -111,7 +120,7 @@ class creditsController extends Controller
      */
     public function destroy($id)
     {
-        if (Auth::check() && Auth::user()->role == 'admin') {
+        if (Auth::check() && Auth::user()->role >= 5) {
             credit::destroy($id);
             broadcast(new creditChange($id, 'destroy'))->toOthers();
         } else {

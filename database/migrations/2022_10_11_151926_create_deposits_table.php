@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('sum')->nullable();
             $table->string('status')->default('waiting');
             $table->timestamps();
+
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

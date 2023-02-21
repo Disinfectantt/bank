@@ -9,9 +9,9 @@ export default {
             region: 'MO',
             surname: '',
             name: '',
-            otc: '',
-            document: '',
-            date: this.$route.query.date || 1,
+            patronymic: '',
+            passport: '',
+            period: this.$route.query.period || 1,
             sum: this.$route.query.sum || 1000,
             insurance: true,
             loading: false,
@@ -34,12 +34,12 @@ export default {
                 minLength: helpers.withMessage('Введите корректное имя от 4 до 50 символов', minLength(4)),
                 maxLength: maxLength(50)
             },
-            otc: {
+            patronymic: {
                 required: helpers.withMessage('Обязательно к заполнению', required),
                 minLength: helpers.withMessage('Введите корректное имя от 4 до 50 символов', minLength(4)),
                 maxLength: maxLength(50)
             },
-            document: {
+            passport: {
                 required: helpers.withMessage('Обязательно к заполнению', required),
                 numeric: helpers.withMessage('Введите корректный номер', numeric),
                 minLength: minLength(10),
@@ -50,31 +50,31 @@ export default {
     methods: {
         sendFormD() {
             if (this.v$.$invalid) {
-                this.v$.document.$touch();
+                this.v$.passport.$touch();
                 this.v$.surname.$touch();
                 this.v$.name.$touch();
-                this.v$.otc.$touch();
+                this.v$.patronymic.$touch();
                 return;
             }
             this.loading = true;
             axios.post('api/credit', {
                 surname: this.surname,
                 name: this.name,
-                otc: this.otc,
-                document: this.document,
-                reg: this.region,
+                patronymic: this.patronymic,
+                passport: this.passport,
+                region: this.region,
                 insurance: this.insurance.toString(),
-                date: this.date,
+                period: this.period,
                 sum: this.sum
             }).then(response => {
                 this.surname = '';
                 this.name = '';
-                this.otc = '';
-                this.document = '';
+                this.patronymic = '';
+                this.passport = '';
                 this.v$.$reset();
                 this.isVisiblePopup = true;
             }).catch(error => {
-                console.log(error);
+                console.log(error.response.data.message);
             }).finally(() => (this.loading = false));
         },
         close() {
@@ -98,8 +98,8 @@ export default {
                     <div class="wrapper">
                         <div>
                             <div>
-                                <label for="reg">Регион</label>
-                                <select id="reg" class="text" name="reg" v-model="region">
+                                <label for="region">Регион</label>
+                                <select id="region" class="text" name="region" v-model="region">
                                     <option value="MO">Москва и область</option>
                                     <option value="Len obl">Ленинградская область</option>
                                     <option value="Tveskaya obl">Тверская область</option>
@@ -124,32 +124,32 @@ export default {
                                     v-if="v$.name.$dirty && (v$.name.minLength.$invalid || v$.name.maxLength.$invalid)">{{
                                     v$.name.minLength.$message }}</span>
                             </div>
-                            <div><label for="otc">Отчество</label>
-                                <input @blur="v$.otc.$touch()" :class="{ error: v$.otc.$invalid && v$.otc.$dirty }"
-                                    v-model="otc" type="text" id="otc" class="text" placeholder="Петрович" name="otc">
-                                <span class="error" v-if="v$.otc.$dirty && v$.otc.required.$invalid">{{
-                                v$.otc.required.$message }}</span>
+                            <div><label for="patronymic">Отчество</label>
+                                <input @blur="v$.patronymic.$touch()" :class="{ error: v$.patronymic.$invalid && v$.patronymic.$dirty }"
+                                    v-model="patronymic" type="text" id="patronymic" class="text" placeholder="Петрович" name="patronymic">
+                                <span class="error" v-if="v$.patronymic.$dirty && v$.patronymic.required.$invalid">{{
+                                v$.patronymic.required.$message }}</span>
                                 <span class="error"
-                                    v-if="v$.otc.$dirty && (v$.otc.minLength.$invalid || v$.otc.maxLength.$invalid)">{{
-                                    v$.otc.minLength.$message }}</span>
+                                    v-if="v$.patronymic.$dirty && (v$.patronymic.minLength.$invalid || v$.patronymic.maxLength.$invalid)">{{
+                                    v$.patronymic.minLength.$message }}</span>
                             </div>
                         </div>
                         <div>
-                            <div><label for="document">Паспорт</label>
-                                <input :class="{ error: v$.document.$invalid && v$.document.$dirty }"
-                                    @blur="v$.document.$touch()" v-model="document" type="text" id="document"
-                                    class="text" placeholder="88005553535" name="document">
-                                <span class="error" v-if="v$.document.$dirty && v$.document.numeric.$invalid">{{
-                                v$.document.numeric.$message }}</span>
+                            <div><label for="passport">Паспорт</label>
+                                <input :class="{ error: v$.passport.$invalid && v$.passport.$dirty }"
+                                    @blur="v$.passport.$touch()" v-model="passport" type="text" id="passport"
+                                    class="text" placeholder="88005553535" name="passport">
+                                <span class="error" v-if="v$.passport.$dirty && v$.passport.numeric.$invalid">{{
+                                v$.passport.numeric.$message }}</span>
                                 <span class="error"
-                                    v-if="v$.document.$dirty && (v$.document.minLength.$invalid || v$.document.maxLength.$invalid)">{{
-                                    v$.document.numeric.$message }}</span>
-                                <span class="error" v-if="v$.document.$dirty && v$.document.required.$invalid">{{
-                                v$.document.required.$message }}</span>
+                                    v-if="v$.passport.$dirty && (v$.passport.minLength.$invalid || v$.passport.maxLength.$invalid)">{{
+                                    v$.passport.numeric.$message }}</span>
+                                <span class="error" v-if="v$.passport.$dirty && v$.passport.required.$invalid">{{
+                                v$.passport.required.$message }}</span>
                             </div>
-                            <div class="range"><label for="date">Срок кредита (в месяцах)</label>
-                                <input v-model="date" type="range" min="1" max="36" step="1" id="date" name="date">
-                                <p id="srok">{{ date }}</p>
+                            <div class="range"><label for="period">Срок кредита (в месяцах)</label>
+                                <input v-model="period" type="range" min="1" max="36" step="1" id="period" name="period">
+                                <p id="srok">{{ period }}</p>
                             </div>
                             <div class="range"><label for="sum">Сумма кредита (руб)</label>
                                 <input v-model="sum" type="range" min="1000" max="500000" step="1000" id="sum"

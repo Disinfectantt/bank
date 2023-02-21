@@ -19,7 +19,7 @@ class newsletterController extends Controller
      */
     public function index()
     {
-        return Auth::check() && Auth::user()->role == 'admin' ? newsletters::all() : response()->json(['status' => false], 401);
+        return Auth::check() && Auth::user()->role >= 5 ? newsletters::paginate(10)->onEachSide(2) : response()->json(['status' => false], 401);
     }
 
     /**
@@ -42,9 +42,14 @@ class newsletterController extends Controller
         }
 
         Mail::to($request->email)->send(new newsletter());
-
+        if(Auth::check()){
+            $user_id=Auth::user()->id;
+        }else{
+            $user_id = null;
+        }
         $data = newsletters::create([
-            'email' => $request->email
+            'email' => $request->email,
+            'user_id' => $user_id
         ]);
 
         broadcast(new newsletterChange($data, 'new'));
@@ -62,7 +67,11 @@ class newsletterController extends Controller
      */
     public function show($id)
     {
-        //
+        if (Auth::check() && Auth::user()->id != $id){
+            return response()->json(['status' => false], 401);
+        }
+
+        return newsletters::where('user_id', '=', $id)->get();
     }
 
     /**
@@ -74,7 +83,7 @@ class newsletterController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (Auth::check() && Auth::user()->role == 'admin') {
+        if (Auth::check() && Auth::user()->role >= 5) {
             $data = [
                 'email' => $request->email
             ];
@@ -94,7 +103,7 @@ class newsletterController extends Controller
      */
     public function destroy($id)
     {
-        if (Auth::check() && Auth::user()->role == 'admin') {
+        if (Auth::check() && Auth::user()->role >= 5) {
             newsletters::destroy($id);
             broadcast(new newsletterChange($id, 'destroy'))->toOthers();
         } else {

@@ -4,7 +4,8 @@ const store = createStore({
   state () {
     return {
       isAuth: false,
-      isAdmin: false
+      isAdmin: false,
+      email: ''
     }
   }
 })

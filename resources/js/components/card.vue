@@ -8,8 +8,8 @@ export default {
         return {
             surname: '',
             name: '',
-            otc: '',
-            document: '',
+            patronymic: '',
+            passport: '',
             card: this.$route.query.card || 'card1',
             tel: '',
             credit: 0,
@@ -33,12 +33,12 @@ export default {
                 minLength: helpers.withMessage('Введите корректное имя от 4 до 50 символов', minLength(4)),
                 maxLength: maxLength(50)
             },
-            otc: {
+            patronymic: {
                 required: helpers.withMessage('Обязательно к заполнению', required),
                 minLength: helpers.withMessage('Введите корректное имя от 4 до 50 символов', minLength(4)),
                 maxLength: maxLength(50)
             },
-            document: {
+            passport: {
                 required: helpers.withMessage('Обязательно к заполнению', required),
                 numeric: helpers.withMessage('Введите корректный номер', numeric),
                 minLength: minLength(10),
@@ -63,8 +63,8 @@ export default {
                 this.v$.tel.$touch();
                 this.v$.surname.$touch();
                 this.v$.name.$touch();
-                this.v$.otc.$touch();
-                this.v$.document.$touch();
+                this.v$.patronymic.$touch();
+                this.v$.passport.$touch();
                 this.v$.credit.$touch();
                 return;
             }
@@ -72,22 +72,22 @@ export default {
             axios.post('api/card', {
                 surname: this.surname,
                 name: this.name,
-                otc: this.otc,
-                document: this.document,
+                patronymic: this.patronymic,
+                passport: this.passport,
                 card: this.card,
                 tel: this.tel,
                 credit: this.credit
             }).then(response => {
                 this.surname = '';
                 this.name = '';
-                this.otc = '';
-                this.document = '';
+                this.patronymic = '';
+                this.passport = '';
                 this.tel = '';
                 this.credit = '';
                 this.v$.$reset();
                 this.isVisiblePopup = true;
             }).catch(error => {
-                console.log(error);
+                console.log(error.response.data.message);
             }).finally(() => (this.loading = false));
         },
         close() {
@@ -126,26 +126,26 @@ export default {
                             v-if="v$.name.$dirty && (v$.name.minLength.$invalid || v$.name.maxLength.$invalid)">{{
                             v$.name.minLength.$message }}</span>
                     </div>
-                    <div><label for="otc">Отчество</label>
-                        <input @blur="v$.otc.$touch()" :class="{ error: v$.otc.$invalid && v$.otc.$dirty }"
-                            v-model="otc" type="text" id="otc" class="text" placeholder="Петрович" name="otc">
-                        <span class="error" v-if="v$.otc.$dirty && v$.otc.required.$invalid">{{ v$.otc.required.$message
+                    <div><label for="patronymic">Отчество</label>
+                        <input @blur="v$.patronymic.$touch()" :class="{ error: v$.patronymic.$invalid && v$.patronymic.$dirty }"
+                            v-model="patronymic" type="text" id="patronymic" class="text" placeholder="Петрович" name="patronymic">
+                        <span class="error" v-if="v$.patronymic.$dirty && v$.patronymic.required.$invalid">{{ v$.patronymic.required.$message
                         }}</span>
                         <span class="error"
-                            v-if="v$.otc.$dirty && (v$.otc.minLength.$invalid || v$.otc.maxLength.$invalid)">{{
-                            v$.otc.minLength.$message }}</span>
+                            v-if="v$.patronymic.$dirty && (v$.patronymic.minLength.$invalid || v$.patronymic.maxLength.$invalid)">{{
+                            v$.patronymic.minLength.$message }}</span>
                     </div>
-                    <div><label for="document">Паспорт</label>
-                        <input :class="{ error: v$.document.$invalid && v$.document.$dirty }"
-                            @blur="v$.document.$touch()" v-model="document" type="text" id="document" class="text"
-                            placeholder="88005553535" name="document">
-                        <span class="error" v-if="v$.document.$dirty && v$.document.numeric.$invalid">{{
-                        v$.document.numeric.$message }}</span>
+                    <div><label for="passport">Паспорт</label>
+                        <input :class="{ error: v$.passport.$invalid && v$.passport.$dirty }"
+                            @blur="v$.passport.$touch()" v-model="passport" type="text" id="passport" class="text"
+                            placeholder="88005553535" name="passport">
+                        <span class="error" v-if="v$.passport.$dirty && v$.passport.numeric.$invalid">{{
+                        v$.passport.numeric.$message }}</span>
                         <span class="error"
-                            v-if="v$.document.$dirty && (v$.document.minLength.$invalid || v$.document.maxLength.$invalid)">{{
+                            v-if="v$.passport.$dirty && (v$.passport.minLength.$invalid || v$.passport.maxLength.$invalid)">{{
                             v$.tel.numeric.$message }}</span>
-                        <span class="error" v-if="v$.document.$dirty && v$.document.required.$invalid">{{
-                        v$.document.required.$message }}</span>
+                        <span class="error" v-if="v$.passport.$dirty && v$.passport.required.$invalid">{{
+                        v$.passport.required.$message }}</span>
                     </div>
                     <div>
                         <label for="card">Карта</label>

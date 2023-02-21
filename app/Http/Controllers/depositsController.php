@@ -17,7 +17,7 @@ class depositsController extends Controller
      */
     public function index()
     {
-        return Auth::check() && Auth::user()->role == 'admin' ? deposit::all() : response()->json(['status' => false], 401);
+        return Auth::check() && Auth::user()->role >= 5 ? deposit::paginate(10)->onEachSide(2) : response()->json(['status' => false], 401);
     }
 
     /**
@@ -31,8 +31,8 @@ class depositsController extends Controller
         $validator = Validator::make($request->all(), [
             'surname' => 'required|max:50|min:4',
             'name' => 'required|max:50|min:4',
-            'otc' => 'required|max:50|min:4',
-            'date' => 'required|integer|between:1,72',
+            'patronymic' => 'required|max:50|min:4',
+            'period' => 'required|integer|between:1,72',
             'sum' => 'required|integer|between:1,500000',
         ]);
 
@@ -42,13 +42,18 @@ class depositsController extends Controller
                 'message' => $validator->errors(),
             ], 400);
         }
-
+        if(Auth::check()){
+            $user_id=Auth::user()->id;
+        }else{
+            $user_id = null;
+        }
         $data = deposit::create([
             'surname' => $request->surname,
             'name' => $request->name,
-            'patronymic' => $request->otc,
-            'period' => $request->date,
+            'patronymic' => $request->patronymic,
+            'period' => $request->period,
             'sum' => $request->sum,
+            'user_id' => $user_id
         ]);
 
         broadcast(new depositChange($data, 'new'));
@@ -66,7 +71,11 @@ class depositsController extends Controller
      */
     public function show($id)
     {
-        //
+        if (Auth::check() && Auth::user()->id != $id){
+            return response()->json(['status' => false], 401);
+        }
+
+        return deposit::where('user_id', '=', $id)->get();
     }
 
     /**
@@ -78,12 +87,12 @@ class depositsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (Auth::check() && Auth::user()->role == 'admin') {
+        if (Auth::check() && Auth::user()->role >= 5) {
             $data = [
                 'surname' => $request->surname,
                 'name' => $request->name,
-                'patronymic' => $request->otc,
-                'period' => $request->date,
+                'patronymic' => $request->patronymic,
+                'period' => $request->period,
                 'sum' => $request->sum
             ];
             deposit::where('id', $id)->update($data);
@@ -102,7 +111,7 @@ class depositsController extends Controller
      */
     public function destroy($id)
     {
-        if (Auth::check() && Auth::user()->role == 'admin') {
+        if (Auth::check() && Auth::user()->role >= 5) {
             deposit::destroy($id);
             broadcast(new depositChange($id, 'destroy'))->toOthers();
         } else {

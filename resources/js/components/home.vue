@@ -112,7 +112,7 @@ export default {
         </section>
         <section class="update">
             <div class="center">
-                <h2>Подписаться на обновления</h2>
+                <h2 id="newsletter">Подписаться на обновления</h2>
             </div>
             <formB></formB>
         </section>

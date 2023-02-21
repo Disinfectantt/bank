@@ -2,7 +2,7 @@
 export default {
     data() {
         return {
-            date: 1,
+            period: 1,
             sum: 1000,
             percent: 1500
         }
@@ -11,11 +11,11 @@ export default {
         sendFormC() {
             this.$router.push({
                 name: 'credit',
-                query: { sum: this.sum, date: this.date }
+                query: { sum: this.sum, period: this.period }
             });
         },
         getPercent() {
-            this.percent = Math.round((this.sum * 1.5) / this.date);
+            this.percent = Math.round((this.sum * 1.5) / this.period);
         }
     },
 }
@@ -30,10 +30,10 @@ export default {
             </div>
             <form class="c" action="credit.php" method="GET" @submit.prevent="sendFormC">
                 <div class="crdt">
-                    <div class="range"><label for="date">Срок кредита (в месяцах)</label>
-                        <input type="range" min="1" max="36" step="1" id="date" name="date" v-model="date"
+                    <div class="range"><label for="period">Срок кредита (в месяцах)</label>
+                        <input type="range" min="1" max="36" step="1" id="period" name="period" v-model="period"
                             @input="getPercent()">
-                        <p id="srok">{{ date }}</p>
+                        <p id="srok">{{ period }}</p>
                     </div>
                     <div class="range"><label for="sum">Сумма кредита (руб)</label>
                         <input type="range" min="1000" max="500000" step="1000" id="sum" v-model="sum" name="sum"

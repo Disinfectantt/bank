@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class feedback extends Model
 {
     use HasFactory;
-    protected $fillable = ['region', 'tel', 'surname', 'name', 'patronymic'];
+    protected $fillable = ['region', 'tel', 'surname', 'name', 'patronymic', 'user_id'];
 }

@@ -2,45 +2,29 @@
     <header>
         <router-link :to="{ name: 'home' }"><img src="img/logo.png" class="logo" alt="logo"></router-link>
         <h1 id="bank">Банк</h1>
-        <nav v-if="homeHeader">
-            <a href="#">Главная</a>
-            <a href="#cervices">Наши услуги</a>
-            <a href="#reviews">Отзывы</a>
-            <router-link :to="{ name: 'check_credit'}">Рассчитать кредит</router-link>
-            <router-link :to="{ name: 'credit'}">Оформить кредит</router-link>
-            <a href="#cards">Карты</a>
-        </nav>
 
-        <nav v-if="!homeHeader">
+        <nav>
             <router-link :to="{ name: 'home' }">Главная</router-link>
             <router-link to="/#services">Наши услуги</router-link>
             <router-link to="/#reviews">Отзывы</router-link>
-            <router-link :to="{ name: 'check_credit'}">Рассчитать кредит</router-link>
+            <router-link :to="{ name: 'check_credit' }">Рассчитать кредит</router-link>
             <router-link :to="{ name: 'credit' }">Оформить кредит</router-link>
             <router-link to="/#cards">Карты</router-link>
+            <router-link :to="{ name: 'login' }" v-if="!$store.state.isAuth">Вход</router-link>
+            <router-link :to="{ name: 'register' }" v-if="!$store.state.isAuth">Регистрация</router-link>
+            <router-link :to="{ name: 'personal_account' }" v-if="$store.state.isAuth">Личный кабинет</router-link>
+            <router-link :to="{ name: 'admin_panel' }" v-if="$store.state.isAdmin">Админ</router-link>
+            <a @click.prevent="logout" v-if="$store.state.isAuth">Выйти</a>
         </nav>
 
-        <div class="burger" @click="isActive = !isActive" :class="{active:isActive}">
+        <div class="burger" @click="isActive = !isActive" :class="{ active: isActive }">
             <span></span>
             <span></span>
             <span></span>
         </div>
     </header>
 
-    <ul class="nav" v-if="homeHeader" :class="{active:isActive}">
-        <li><a href="#">Главная</a></li>
-        <li><a href="#services">Наши услуги</a></li>
-        <li><a href="#reviews">Отзывы</a></li>
-        <li>
-            <router-link :to="{ name: 'check_credit'}">Рассчитать кредит</router-link>
-        </li>
-        <li>
-            <router-link :to="{ name: 'credit'}">Оформить кредит</router-link>
-        </li>
-        <li><a href="#cards">Карты</a></li>
-    </ul>
-
-    <ul class="nav" v-if="!homeHeader" :class="{active:isActive}">
+    <ul class="nav" :class="{ active: isActive }">
         <li>
             <router-link :to="{ name: 'home' }">Главная</router-link>
         </li>
@@ -51,13 +35,28 @@
             <router-link to="/#reviews">Отзывы</router-link>
         </li>
         <li>
-            <router-link :to="{ name: 'check_credit'}">Рассчитать кредит</router-link>
+            <router-link :to="{ name: 'check_credit' }">Рассчитать кредит</router-link>
         </li>
         <li>
             <router-link :to="{ name: 'credit' }">Оформить кредит</router-link>
         </li>
         <li>
             <router-link to="/#cards">Карты</router-link>
+        </li>
+        <li>
+            <router-link :to="{ name: 'login' }" v-if="!$store.state.isAuth">Вход</router-link>
+        </li>
+        <li>
+            <router-link :to="{ name: 'register' }" v-if="!$store.state.isAuth">Регистрация</router-link>
+        </li>
+        <li>
+            <router-link :to="{ name: 'personal_account' }" v-if="$store.state.isAuth">Личный кабинет</router-link>
+        </li>
+        <li>
+            <router-link :to="{ name: 'admin_panel' }" v-if="$store.state.isAdmin">Админ</router-link>
+        </li>
+        <li>
+            <a @click.prevent="logout" v-if="$store.state.isAuth">Выйти</a>
         </li>
     </ul>
 </template>
@@ -66,18 +65,11 @@
 export default {
     data() {
         return {
-            homeHeader: false,
             isActive: false
         }
     },
     watch: {
         $route($to, from) {
-            if ($to.path == '/') {
-                this.homeHeader = true;
-            }
-            if ($to.path != '/') {
-                this.homeHeader = false;
-            }
             setTimeout(() => {
                 this.isActive = false;
                 if (location.hash != '') {
@@ -137,10 +129,33 @@ export default {
                 }
                 scrollPrev = scrolled;
             });
-        }
+        },
+        isAuthenticated() {
+            axios.get(`api/user`).then(response => {
+                this.$store.state.isAuth = true;
+                this.$store.state.email = response.data.email;
+                if (response.data.role >= 5) {
+                    this.$store.state.isAdmin = true;
+                }
+            }).catch(error => {
+                this.$store.state.isAuth = false;
+                this.$store.state.isAdmin = false;
+            });
+        },
+        logout() {
+            axios.post(`api/logout`).then(response => {
+                this.$store.state.isAuth = false;
+                this.$store.state.isAdmin = false;
+                this.$store.state.email = '';
+                this.$router.push({ name: 'home' });
+            }).catch(error => {
+                console.log(error);
+            });
+        },
     },
     mounted() {
         this.main();
+        this.isAuthenticated();
     }
 }
 </script>

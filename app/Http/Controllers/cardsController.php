@@ -17,7 +17,7 @@ class cardsController extends Controller
      */
     public function index()
     {
-        return Auth::check() && Auth::user()->role == 'admin' ? card::all() : response()->json(['status' => false], 401);
+        return Auth::check() && Auth::user()->role >= 5 ? card::paginate(10)->onEachSide(2) : response()->json(['status' => false], 401);
     }
 
     /**
@@ -31,11 +31,11 @@ class cardsController extends Controller
         $validator = Validator::make($request->all(), [
             'surname' => 'required|max:50|min:4',
             'name' => 'required|max:50|min:4',
-            'otc' => 'required|max:50|min:4',
+            'patronymic' => 'required|max:50|min:4',
             'card' => 'required',
             'tel' => 'required|digits_between:11,11',
             'credit' => 'required|integer|between:0,100000',
-            'document' => 'required|max:10|min:10',
+            'passport' => 'required|max:10|min:10',
         ]);
 
         if ($validator->fails()) {
@@ -44,15 +44,20 @@ class cardsController extends Controller
                 'message' => $validator->errors(),
             ], 400);
         }
-
+        if(Auth::check()){
+            $user_id=Auth::user()->id;
+        }else{
+            $user_id = null;
+        }
         $data = card::create([
             'surname' => $request->surname,
             'name' => $request->name,
-            'patronymic' => $request->otc,
-            'passport' => $request->document,
+            'patronymic' => $request->patronymic,
+            'passport' => $request->passport,
             'card' => $request->card,
             'tel' => $request->tel,
             'card_limit' => $request->credit,
+            'user_id' => $user_id
         ]);
 
         broadcast(new cardChange($data, 'new'));
@@ -70,7 +75,11 @@ class cardsController extends Controller
      */
     public function show($id)
     {
-        //
+        if (Auth::check() && Auth::user()->id != $id){
+            return response()->json(['status' => false], 401);
+        }
+
+        return card::where('user_id', '=', $id)->get();
     }
 
     /**
@@ -82,12 +91,12 @@ class cardsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (Auth::check() && Auth::user()->role == '1') {
+        if (Auth::check() && Auth::user()->role >= 5) {
             $data = [
                 'surname' => $request->surname,
                 'name' => $request->name,
-                'patronymic' => $request->otc,
-                'passport' => $request->document,
+                'patronymic' => $request->patronymic,
+                'passport' => $request->passport,
                 'card' => $request->card,
                 'tel' => $request->tel,
                 'card_limit' => $request->credit
@@ -108,7 +117,7 @@ class cardsController extends Controller
      */
     public function destroy($id)
     {
-        if (Auth::check() && Auth::user()->role == '1') {
+        if (Auth::check() && Auth::user()->role >= 5) {
             card::destroy($id);
             broadcast(new cardChange($id, 'destroy'))->toOthers();
         } else {

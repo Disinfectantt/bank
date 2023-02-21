@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class deposit extends Model
 {
     use HasFactory;
-    protected $fillable = ['surname', 'name', 'patronymic', 'period', 'sum'];
+    protected $fillable = ['surname', 'name', 'patronymic', 'period', 'sum', 'user_id'];
 }

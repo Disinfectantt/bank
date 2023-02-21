@@ -35,7 +35,7 @@ export default {
                 this.v$.$reset();
                 this.isVisiblePopup = true;
             }).catch(error => {
-                console.log(error);
+                console.log(error.response.data);
             }).finally(() => (this.loading = false));
         },
         close() {

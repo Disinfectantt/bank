@@ -8,8 +8,8 @@ export default {
         return {
             surname: '',
             name: '',
-            otc: '',
-            date: 1,
+            patronymic: '',
+            period: 1,
             sum: 1000,
             loading: false,
             profit: 90000,
@@ -32,7 +32,7 @@ export default {
                 minLength: helpers.withMessage('Введите корректное имя от 4 до 50 символов', minLength(4)),
                 maxLength: maxLength(50)
             },
-            otc: {
+            patronymic: {
                 required: helpers.withMessage('Обязательно к заполнению', required),
                 minLength: helpers.withMessage('Введите корректное имя от 4 до 50 символов', minLength(4)),
                 maxLength: maxLength(50)
@@ -44,28 +44,28 @@ export default {
             if (this.v$.$invalid) {
                 this.v$.surname.$touch();
                 this.v$.name.$touch();
-                this.v$.otc.$touch();
+                this.v$.patronymic.$touch();
                 return;
             }
             this.loading = true;
             axios.post('api/deposit', {
                 surname: this.surname,
                 name: this.name,
-                otc: this.otc,
-                date: this.date,
+                patronymic: this.patronymic,
+                period: this.period,
                 sum: this.sum
             }).then(response => {
                 this.surname = '';
                 this.name = '';
-                this.otc = '';
+                this.patronymic = '';
                 this.v$.$reset();
                 this.isVisiblePopup = true;
             }).catch(error => {
-                console.log(error);
+                console.log(error.response.data.message);
             }).finally(() => (this.loading = false));
         },
         getProfit() {
-            this.profit = Math.round(this.sum * 1.5 * this.date);
+            this.profit = Math.round(this.sum * 1.5 * this.period);
         },
         close() {
             this.isVisiblePopup = false;
@@ -103,19 +103,19 @@ export default {
                             v-if="v$.name.$dirty && (v$.name.minLength.$invalid || v$.name.maxLength.$invalid)">{{
                             v$.name.minLength.$message }}</span>
                     </div>
-                    <div><label for="otc">Отчество</label>
-                        <input @blur="v$.otc.$touch()" :class="{ error: v$.otc.$invalid && v$.otc.$dirty }"
-                            v-model="otc" type="text" id="otc" class="text" placeholder="Петрович" name="otc">
-                        <span class="error" v-if="v$.otc.$dirty && v$.otc.required.$invalid">{{ v$.otc.required.$message
+                    <div><label for="patronymic">Отчество</label>
+                        <input @blur="v$.patronymic.$touch()" :class="{ error: v$.patronymic.$invalid && v$.patronymic.$dirty }"
+                            v-model="patronymic" type="text" id="patronymic" class="text" placeholder="Петрович" name="patronymic">
+                        <span class="error" v-if="v$.patronymic.$dirty && v$.patronymic.required.$invalid">{{ v$.patronymic.required.$message
                         }}</span>
                         <span class="error"
-                            v-if="v$.otc.$dirty && (v$.otc.minLength.$invalid || v$.otc.maxLength.$invalid)">{{
-                            v$.otc.minLength.$message }}</span>
+                            v-if="v$.patronymic.$dirty && (v$.patronymic.minLength.$invalid || v$.patronymic.maxLength.$invalid)">{{
+                            v$.patronymic.minLength.$message }}</span>
                     </div>
-                    <div class="range"><label for="date">Срок вклада (в месяцах)</label>
-                        <input v-model="date" type="range" min="6" max="72" step="1" id="date" @input="getProfit()"
-                            name="date">
-                        <p id="srok">{{ date }}</p>
+                    <div class="range"><label for="period">Срок вклада (в месяцах)</label>
+                        <input v-model="period" type="range" min="6" max="72" step="1" id="period" @input="getProfit()"
+                            name="period">
+                        <p id="srok">{{ period }}</p>
                     </div>
                     <div class="range"><label for="sum">Сумма кредита (руб)</label>
                         <input v-model="sum" type="range" min="10000" max="500000" step="1000" id="sum"

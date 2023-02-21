@@ -24,17 +24,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Auth::routes();
+Auth::routes(['verify' => true]);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
-});
-
-Route::get('/isAuthenticated', function () {
-    if (Auth::check()) {
-        return response()->json(['status' => true, 'role' => Auth::user()->role]);
-    } else {
-        return response()->json(['status' => false]);
-    }
 });
 
 Route::resource('feedback', feedbackController::class)->except([

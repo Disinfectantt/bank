@@ -7,14 +7,18 @@ export default {
     data() {
         return {
             activeItem: 'feedback',
-            data: '',
+            data: [],
             loading: false,
             isEditVisible: false,
-            someData: ''
+            someData: '',
+            page: 1
         }
     },
     mounted() {
-        this.getData(this.activeItem);
+        if (Number.isInteger(Number(this.$route.query.page))) {
+            this.page = Number(this.$route.query.page);
+        }
+        this.getData(this.activeItem, this.page);
         this.whatChannel(this.activeItem);
     },
     methods: {
@@ -22,9 +26,10 @@ export default {
             return this.activeItem === menuItem;
         },
         setActive(menuItem) {
-            this.data = '';
+            this.data = [];
             this.activeItem = menuItem;
-            this.getData(menuItem);
+            this.$router.replace({ query: null });
+            this.getData(menuItem, 1);
             this.whatChannel(menuItem);
         },
         close() {
@@ -34,28 +39,29 @@ export default {
             this.someData = someData;
             this.isEditVisible = true;
         },
-        getData(item) {
+        getData(item, page = 1) {
             this.loading = true;
-            axios.get(`api/${item}`).then(response => {
+            axios.get(`api/${item}?page=${page}`).then(response => {
                 this.data = response.data;
-                this.$store.state.isAuth = true;
-                this.$store.state.isAdmin = true;
+                this.page = response.data.current_page;
+                if (this.page > response.data.last_page) {
+                    this.page = response.data.last_page;
+                    this.paginate(this.page);
+                }
             }).catch(error => {
                 this.$router.push({ name: 'login' });
-                this.$store.state.isAuth = false;
-                this.$store.state.isAdmin = false;
             }).finally(() => (this.loading = false));
         },
         deleteData(item, id) {
             axios.delete(`api/${item}/${id}`).then(response => {
-                for (let i = 0; i < this.data.length; i++) {
-                    if (this.data[i].id == id) {
-                        this.data.splice(i, 1);
+                for (let i = 0; i < this.data.data.length; i++) {
+                    if (this.data.data[i].id == id) {
+                        this.data.data.splice(i, 1);
                         break;
                     }
                 }
             }).catch(error => {
-                console.log(error);
+                console.log(error.response.data);
             }).finally(() => (this.loading = false));
         },
         editData(item, id) {
@@ -63,7 +69,7 @@ export default {
             axios.put(`api/${item}/${id}`, this.getFormValues()).then(response => {
                 this.close();
             }).catch(error => {
-                console.log(error);
+                console.log(error.response.data);
             }).finally(() => (this.loading = false));
         },
         getFormValues() {
@@ -72,34 +78,26 @@ export default {
             for (let i = 0; i < inputs.length; i++) {
                 formValues[inputs[i].id] = inputs[i].value;
             }
+            this.someData = formValues;
             return formValues;
-        },
-        logout() {
-            axios.post(`api/logout`).then(response => {
-                this.$router.push({ name: 'home' });
-                this.$store.state.isAuth = false;
-                this.$store.state.isAdmin = false;
-            }).catch(error => {
-                console.log(error);
-            });
         },
         whatAction(action, broadcastData) {
             switch (action) {
                 case 'new':
-                    this.data.unshift(broadcastData);
+                    this.data.data.unshift(broadcastData);
                     break;
                 case 'update':
-                    for (let i = 0; i < this.data.length; i++) {
-                        if (this.data[i].id == broadcastData[0].id) {
-                            this.data.splice(i, 1, broadcastData[0]);
+                    for (let i = 0; i < this.data.data.length; i++) {
+                        if (this.data.data[i].id == broadcastData[0].id) {
+                            this.data.data.splice(i, 1, broadcastData[0]);
                             break;
                         }
                     }
                     break;
                 case 'destroy':
-                    for (let i = 0; i < this.data.length; i++) {
-                        if (this.data[i].id == broadcastData) {
-                            this.data.splice(i, 1);
+                    for (let i = 0; i < this.data.data.length; i++) {
+                        if (this.data.data[i].id == broadcastData) {
+                            this.data.data.splice(i, 1);
                             break;
                         }
                     }
@@ -112,6 +110,17 @@ export default {
                 .listen(`${channel}Change`, (e) => {
                     this.whatAction(e.action, e.data);
                 });
+        },
+        complete(id) {
+            axios.put(`api/feedback/${id}`, { status: 'completed' }).then(response => {
+            }).catch(error => {
+                console.log(error.response.data);
+            });
+        },
+        paginate(page = 1) {
+            this.page = page;
+            this.$router.push({ name: 'admin_panel', query: { page: page } });
+            this.getData(this.activeItem, page);
         }
     }
 }
@@ -119,11 +128,11 @@ export default {
 
 <template>
     <admin_popup_edit v-if="isEditVisible" @close="close">
-        <form action="" @submit.prevent="editData(activeItem, someData.id)" v-if="activeItem == 'feedback'"
-            id="editForm" class="editForm">
+        <form action="" @submit.prevent="editData(activeItem, someData.id)" v-if="activeItem == 'feedback'" id="editForm"
+            class="editForm">
             <div>
-                <label for="reg">Регион</label>
-                <input class="text" type="text" id="reg" :value="someData.region">
+                <label for="region">Регион</label>
+                <input class="text" type="text" id="region" :value="someData.region">
             </div>
             <div>
                 <label for="tel">Телефон</label>
@@ -138,8 +147,8 @@ export default {
                 <input class="text" type="text" id="name" :value="someData.name">
             </div>
             <div>
-                <label for="otc">Отчество</label>
-                <input class="text" type="text" id="otc" :value="someData.patronymic">
+                <label for="patronymic">Отчество</label>
+                <input class="text" type="text" id="patronymic" :value="someData.patronymic">
             </div>
             <button type="submit" class="button submit" :disabled="loading">
                 <p v-if="!loading">Изменить</p>
@@ -147,8 +156,8 @@ export default {
             </button>
         </form>
 
-        <form action="" @submit.prevent="editData(activeItem, someData.id)" v-if="activeItem == 'newsletter'"
-            id="editForm" class="editForm">
+        <form action="" @submit.prevent="editData(activeItem, someData.id)" v-if="activeItem == 'newsletter'" id="editForm"
+            class="editForm">
             <div>
                 <label for="email">Email</label>
                 <input class="text" type="text" id="email" :value="someData.email">
@@ -162,8 +171,8 @@ export default {
         <form action="" @submit.prevent="editData(activeItem, someData.id)" v-if="activeItem == 'credit'" id="editForm"
             class="editForm">
             <div>
-                <label for="reg">Регион</label>
-                <input class="text" type="text" id="reg" :value="someData.region">
+                <label for="region">Регион</label>
+                <input class="text" type="text" id="region" :value="someData.region">
             </div>
             <div>
                 <label for="surname">Фамилия</label>
@@ -174,16 +183,16 @@ export default {
                 <input class="text" type="text" id="name" :value="someData.name">
             </div>
             <div>
-                <label for="otc">Отчество</label>
-                <input class="text" type="text" id="otc" :value="someData.patronymic">
+                <label for="patronymic">Отчество</label>
+                <input class="text" type="text" id="patronymic" :value="someData.patronymic">
             </div>
             <div>
-                <label for="document">Паспорт</label>
-                <input class="text" type="text" id="document" :value="someData.passport">
+                <label for="passport">Паспорт</label>
+                <input class="text" type="text" id="passport" :value="someData.passport">
             </div>
             <div>
-                <label for="date">Период</label>
-                <input class="text" type="text" id="date" :value="someData.period">
+                <label for="period">Период</label>
+                <input class="text" type="text" id="period" :value="someData.period">
             </div>
             <div>
                 <label for="sum">Сумма</label>
@@ -210,12 +219,12 @@ export default {
                 <input class="text" type="text" id="name" :value="someData.name">
             </div>
             <div>
-                <label for="otc">Отчество</label>
-                <input class="text" type="text" id="otc" :value="someData.patronymic">
+                <label for="patronymic">Отчество</label>
+                <input class="text" type="text" id="patronymic" :value="someData.patronymic">
             </div>
             <div>
-                <label for="document">Паспорт</label>
-                <input class="text" type="text" id="document" :value="someData.passport">
+                <label for="passport">Паспорт</label>
+                <input class="text" type="text" id="passport" :value="someData.passport">
             </div>
             <div>
                 <label for="card">Карта</label>
@@ -246,12 +255,12 @@ export default {
                 <input class="text" type="text" id="name" :value="someData.name">
             </div>
             <div>
-                <label for="otc">Отчество</label>
-                <input class="text" type="text" id="otc" :value="someData.patronymic">
+                <label for="patronymic">Отчество</label>
+                <input class="text" type="text" id="patronymic" :value="someData.patronymic">
             </div>
             <div>
-                <label for="date">Период</label>
-                <input class="text" type="text" id="date" :value="someData.period">
+                <label for="period">Период</label>
+                <input class="text" type="text" id="period" :value="someData.period">
             </div>
             <div>
                 <label for="sum">Сумма</label>
@@ -263,113 +272,122 @@ export default {
             </button>
         </form>
     </admin_popup_edit>
-    <section class="admin">
-        <button class="logout button" @click="logout">Logout</button>
-        <div class="wrapper">
-            <div class="w_a wrapper">
-                <a class="tab-link" @click.prevent="setActive('feedback')"
-                    :class="{ tabLinkActive: isActive('feedback') }">Обратная связь</a>
-                <a class="tab-link" @click.prevent="setActive('newsletter')"
-                    :class="{ tabLinkActive: isActive('newsletter') }">Emails</a>
-                <a class="tab-link" @click.prevent="setActive('credit')"
-                    :class="{ tabLinkActive: isActive('credit') }">Кредиты</a>
-                <a class="tab-link" @click.prevent="setActive('deposit')"
-                    :class="{ tabLinkActive: isActive('deposit') }">Вклады</a>
-                <a class="tab-link" @click.prevent="setActive('card')"
-                    :class="{ tabLinkActive: isActive('card') }">Карты</a>
-            </div>
-        </div>
 
-        <div class="loader_wrapper" v-if="loading">
-            <div class="loader2"></div>
-        </div>
-
-        <TransitionGroup tag="div" name="fade" class="container wrapper i" v-if="activeItem == 'feedback'">
-            <div class="admin_item" v-for="item in data" :key="item.id">
-                <p><b>Регион:</b> {{ item.region }}</p>
-                <p><b>Фамилия:</b> {{ item.surname }}</p>
-                <p><b>Имя:</b> {{ item.name }}</p>
-                <p><b>Отчество:</b> {{ item.patronymic }}</p>
-                <p><b>Телефон:</b> {{ item.tel }}</p>
-                <p><b>Дата:</b> {{ item.created_at.replace('T', ' ').slice(0, -8) }}</p>
-                <div class="adm_btns">
-                    <button title="Удалить" @click="deleteData(activeItem, item.id)">❌</button>
-                    <button title="Редактировать" @click="edit(item)">✍</button>
+    <main>
+        <section class="admin" v-if="$store.state.isAdmin">
+            <div class="wrapper">
+                <div class="w_a wrapper">
+                    <a class="tab-link" @click.prevent="setActive('feedback')"
+                        :class="{ tabLinkActive: isActive('feedback') }">Обратная связь</a>
+                    <a class="tab-link" @click.prevent="setActive('newsletter')"
+                        :class="{ tabLinkActive: isActive('newsletter') }">Emails</a>
+                    <a class="tab-link" @click.prevent="setActive('credit')"
+                        :class="{ tabLinkActive: isActive('credit') }">Кредиты</a>
+                    <a class="tab-link" @click.prevent="setActive('deposit')"
+                        :class="{ tabLinkActive: isActive('deposit') }">Вклады</a>
+                    <a class="tab-link" @click.prevent="setActive('card')"
+                        :class="{ tabLinkActive: isActive('card') }">Карты</a>
                 </div>
             </div>
-        </TransitionGroup>
 
-        <TransitionGroup tag="div" name="fade" class="container wrapper i" v-if="activeItem == 'newsletter'">
-            <div class="admin_item" v-for="item in data" :key="item.id">
-                <p><b>Email:</b> {{ item.email }}</p>
-                <p><b>Дата:</b> {{ item.created_at.replace('T', ' ').slice(0, -8) }}</p>
-                <div class="adm_btns">
-                    <button title="Удалить" @click="deleteData(activeItem, item.id)">❌</button>
-                    <button title="Редактировать" @click="edit(item)">✍</button>
-                </div>
+            <div class="loader_wrapper" v-if="loading">
+                <div class="loader2"></div>
             </div>
-        </TransitionGroup>
 
-        <TransitionGroup tag="div" name="fade" class="container wrapper i" v-if="activeItem == 'credit'">
-            <div class="admin_item" v-for="item in data" :key="item.id">
-                <p><b>Регион:</b> {{ item.region }}</p>
-                <p><b>Фамилия:</b> {{ item.surname }}</p>
-                <p><b>Имя:</b> {{ item.name }}</p>
-                <p><b>Отчество:</b> {{ item.patronymic }}</p>
-                <p><b>Паспорт:</b> {{ item.passport }}</p>
-                <p><b>Период:</b> {{ item.period }}</p>
-                <p><b>Сумма:</b> {{ item.sum }}</p>
-                <p><b>Страховка:</b> {{ item.insurance }}</p>
-                <p><b>Дата:</b> {{ item.created_at.replace('T', ' ').slice(0, -8) }}</p>
-                <div class="adm_btns">
-                    <button title="Удалить" @click="deleteData(activeItem, item.id)">❌</button>
-                    <button title="Редактировать" @click="edit(item)">✍</button>
+            <TransitionGroup tag="div" name="fade" class="container wrapper i" v-if="activeItem == 'feedback'">
+                <div class="card personal-card" v-for="item in data.data" :key="item.id">
+                    <p><b>Регион:</b> {{ item.region }}</p>
+                    <p><b>Фамилия:</b> {{ item.surname }}</p>
+                    <p><b>Имя:</b> {{ item.name }}</p>
+                    <p><b>Отчество:</b> {{ item.patronymic }}</p>
+                    <p><b>Телефон:</b> {{ item.tel }}</p>
+                    <p><b>Дата:</b> {{ item.created_at.replace('T', ' ').slice(0, -8) }}</p>
+                    <p><b>Статус:</b> {{ item.status }}</p>
+                    <div class="adm_btns">
+                        <button title="Удалить" @click="deleteData(activeItem, item.id)">❌</button>
+                        <button title="Редактировать" @click="edit(item)">✍</button>
+                        <button v-if="item.status != 'completed'" title="Подтвердить" @click="complete(item.id)">✅</button>
+                    </div>
                 </div>
-            </div>
-        </TransitionGroup>
+            </TransitionGroup>
 
-        <TransitionGroup tag="div" name="fade" class="container wrapper i" v-if="activeItem == 'card'">
-            <div class="admin_item" v-for="item in data" :key="item.id">
-                <p><b>Фамилия:</b> {{ item.surname }}</p>
-                <p><b>Имя:</b> {{ item.name }}</p>
-                <p><b>Отчество:</b> {{ item.patronymic }}</p>
-                <p><b>Карта:</b> {{ item.card }}</p>
-                <p><b>Телефон:</b> {{ item.tel }}</p>
-                <p><b>Кредитный лимит:</b> {{ item.card_limit }}</p>
-                <p><b>Дата:</b> {{ item.created_at.replace('T', ' ').slice(0, -8) }}</p>
-                <div class="adm_btns">
-                    <button title="Удалить" @click="deleteData(activeItem, item.id)">❌</button>
-                    <button title="Редактировать" @click="edit(item)">✍</button>
+            <TransitionGroup tag="div" name="fade" class="container wrapper i" v-if="activeItem == 'newsletter'">
+                <div class="card personal-card" v-for="item in data.data" :key="item.id">
+                    <p><b>Email:</b> {{ item.email }}</p>
+                    <p><b>Дата:</b> {{ item.created_at.replace('T', ' ').slice(0, -8) }}</p>
+                    <div class="adm_btns">
+                        <button title="Удалить" @click="deleteData(activeItem, item.id)">❌</button>
+                        <button title="Редактировать" @click="edit(item)">✍</button>
+                    </div>
                 </div>
-            </div>
-        </TransitionGroup>
+            </TransitionGroup>
 
-        <TransitionGroup tag="div" name="fade" class="container wrapper i" v-if="activeItem == 'deposit'">
-            <div class="admin_item" v-for="item in data" :key="item.id">
-                <p><b>Фамилия:</b> {{ item.surname }}</p>
-                <p><b>Имя:</b> {{ item.name }}</p>
-                <p><b>Отчество:</b> {{ item.patronymic }}</p>
-                <p><b>Срок:</b> {{ item.period }}</p>
-                <p><b>Сумма:</b> {{ item.sum }}</p>
-                <p><b>Дата:</b> {{ item.created_at.replace('T', ' ').slice(0, -8) }}</p>
-                <div class="adm_btns">
-                    <button title="Удалить" @click="deleteData(activeItem, item.id)">❌</button>
-                    <button title="Редактировать" @click="edit(item)">✍</button>
+            <TransitionGroup tag="div" name="fade" class="container wrapper i" v-if="activeItem == 'credit'">
+                <div class="card personal-card" v-for="item in data.data" :key="item.id">
+                    <p><b>Регион:</b> {{ item.region }}</p>
+                    <p><b>Фамилия:</b> {{ item.surname }}</p>
+                    <p><b>Имя:</b> {{ item.name }}</p>
+                    <p><b>Отчество:</b> {{ item.patronymic }}</p>
+                    <p><b>Паспорт:</b> {{ item.passport }}</p>
+                    <p><b>Период:</b> {{ item.period }}</p>
+                    <p><b>Сумма:</b> {{ item.sum }}</p>
+                    <p><b>Страховка:</b> {{ item.insurance }}</p>
+                    <p><b>Дата:</b> {{ item.created_at.replace('T', ' ').slice(0, -8) }}</p>
+                    <div class="adm_btns">
+                        <button title="Удалить" @click="deleteData(activeItem, item.id)">❌</button>
+                        <button title="Редактировать" @click="edit(item)">✍</button>
+                    </div>
                 </div>
-            </div>
-        </TransitionGroup>
+            </TransitionGroup>
 
-        <div class="empty" v-if="!loading && data == ''">
-            <p>Ничего нет</p>
-        </div>
-    </section>
+            <TransitionGroup tag="div" name="fade" class="container wrapper i" v-if="activeItem == 'card'">
+                <div class="card personal-card" v-for="item in data.data" :key="item.id">
+                    <p><b>Фамилия:</b> {{ item.surname }}</p>
+                    <p><b>Имя:</b> {{ item.name }}</p>
+                    <p><b>Отчество:</b> {{ item.patronymic }}</p>
+                    <p><b>Карта:</b> {{ item.card }}</p>
+                    <p><b>Телефон:</b> {{ item.tel }}</p>
+                    <p><b>Кредитный лимит:</b> {{ item.card_limit }}</p>
+                    <p><b>Дата:</b> {{ item.created_at.replace('T', ' ').slice(0, -8) }}</p>
+                    <div class="adm_btns">
+                        <button title="Удалить" @click="deleteData(activeItem, item.id)">❌</button>
+                        <button title="Редактировать" @click="edit(item)">✍</button>
+                    </div>
+                </div>
+            </TransitionGroup>
+
+            <TransitionGroup tag="div" name="fade" class="container wrapper i" v-if="activeItem == 'deposit'">
+                <div class="card personal-card" v-for="item in data.data" :key="item.id">
+                    <p><b>Фамилия:</b> {{ item.surname }}</p>
+                    <p><b>Имя:</b> {{ item.name }}</p>
+                    <p><b>Отчество:</b> {{ item.patronymic }}</p>
+                    <p><b>Срок:</b> {{ item.period }}</p>
+                    <p><b>Сумма:</b> {{ item.sum }}</p>
+                    <p><b>Дата:</b> {{ item.created_at.replace('T', ' ').slice(0, -8) }}</p>
+                    <div class="adm_btns">
+                        <button title="Удалить" @click="deleteData(activeItem, item.id)">❌</button>
+                        <button title="Редактировать" @click="edit(item)">✍</button>
+                    </div>
+                </div>
+            </TransitionGroup>
+
+            <div class="pagination" v-if="data.last_page > 1">
+                <button class="pagination-button" v-if="page >= 2" @click="page--; paginate(page)">&lt;</button>
+                <div class="pagination-wrapper">
+                    <button class="pagination-button" v-for="l in data.links" :class="{ points: l.label == '...' }"
+                        :disabled="l.active || l.label == '...'" @click="paginate(Number(l.label))">{{ l.label }}</button>
+                </div>
+                <button class="pagination-button" v-if="page < data.last_page" @click="page++; paginate(page)">></button>
+            </div>
+
+            <div class="empty" v-if="!loading && data.data == ''">
+                <p>Ничего нет</p>
+            </div>
+        </section>
+    </main>
 </template>
 
 <style>
-.admin {
-    margin-top: 8rem;
-}
-
 .w_a {
     gap: 3rem;
     background-color: white;
@@ -398,17 +416,6 @@ export default {
 .adm_btns button:hover {
     background-color: rgb(239, 239, 239);
     transform: scale(1.2);
-}
-
-.admin_item {
-    border: 1px solid rgb(194, 194, 194);
-    border-radius: 10px;
-    box-shadow: 10px 0px 10px 5px rgba(211, 211, 211, 1);
-    text-align: center;
-    padding: 1rem;
-    background: white;
-    width: 20rem;
-    transition: all .4s;
 }
 
 .tabLinkActive {
@@ -450,11 +457,6 @@ export default {
     max-width: 300px;
 }
 
-.loader_wrapper {
-    display: flex;
-    justify-content: center;
-}
-
 .loader2 {
     border: 5px solid #f3f3f3;
     border-top: 5px solid #3498db;
@@ -462,12 +464,5 @@ export default {
     animation: spin .5s linear infinite;
     width: 2rem;
     height: 2rem;
-}
-
-.empty {
-    text-align: center;
-    background-color: white;
-    border-radius: 2rem;
-    padding: .5rem;
 }
 </style>
